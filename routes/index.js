@@ -2,6 +2,34 @@ var express = require('express');
 var router = express.Router();
 const Link= require('../models/link')
 
+router.get('/date/:date', async (req, res, next) => {
+  const date = req.params.date;
+  const startDate = new Date(date);
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 1);
+
+  const resultados = await Link.findAll({
+    where: {
+      createdAt: {
+        [Sequelize.Op.gte]: startDate,
+        [Sequelize.Op.lt]: endDate,
+      },
+    },
+  });
+
+  if (resultados.length === 0) return res.sendStatus(404);
+  res.json(resultados);
+});
+
+router.get('/url/:shortUrl', async (req, res, next) => {
+  const shortUrl = req.params.shortUrl;
+
+  const resultado = await Link.findOne({ where: { code: shortUrl } });
+  if (!resultado) return res.sendStatus(404);
+
+  res.json(resultado);
+});
+
 router.get('/:code/stats', async (req, res, next) => {
   const code = req.params.code;
   const resultado = await Link.findOne({ where: { code } });
